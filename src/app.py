@@ -7,24 +7,28 @@ import time
 import asyncio
 from db_controller import Database
 
-clear = lambda: os.system('clear')
+clear = lambda: os.system('cls')
 
 async def get_stations_names_list() -> None:
+    """prints a list of all available station names"""
     station_list = await API.get_stations()
     print([station['stationName'] for station in station_list])
 
 async def get_stations_ids_list() -> list:
+    """returns all available station ids """
     station_list = await API.get_stations()
     return [station['id'] for station in station_list]
 
 
-async def get_measuring_stands_list_for_station(station_id:int):
+async def get_measuring_stands_list_for_station(station_id:int) -> None:
+    """prints all measuring stands list for station id specified in the argument"""
     stands_list = await API.get_measuring_stands_for_station(station_id)
     info = [stand['param']['paramName'] + " -> id: " + f"{stand['id']}" for stand in stands_list]
     print(info)
 
 
 async def get_all_stand_data() -> dict:
+    """returns a nested dictionary of all available data for all stations"""
     station_ids_list = await get_stations_ids_list()
     clear()
     data = {}
@@ -39,10 +43,12 @@ async def get_all_stand_data() -> dict:
         stand_data = await get_all_stand_data_for_station(id)
         data[id] = stand_data
         clear()
+    print('All stand data collected successfully')
     return data
 
 
 async def get_all_stand_data_for_station(station_id:int) -> list:
+    """returns a nested dictionary list for station id specified in the argument"""
     stands_list = await API.get_measuring_stands_for_station(station_id)
     stand_id_list = [stand['id'] for stand in stands_list]
     data_for_stand = []
@@ -50,15 +56,16 @@ async def get_all_stand_data_for_station(station_id:int) -> list:
         print(f'---- {id} stand data...')
         element = await API.get_measuring_stand_data(id)
         data_for_stand.append(element)
-    # pprint(data_for_stand)
     return data_for_stand
 
 async def get_specific_stand_data(*args:int) -> None:
+    """returns data for specific measuring stand ids specified in *args"""
     data_for_stand = [await API.get_measuring_stand_data(id) for id in args]
     return data_for_stand
 
 
-async def get_all_measuring_stands_list() -> None:
+async def get_all_measuring_stands_list() -> list:
+    """returns a list of tuples containing stand type and stand id gathered from all stations"""
     station_list = await API.get_stations()
     result = []
     print('loading data...')
@@ -76,6 +83,7 @@ async def get_all_measuring_stands_list() -> None:
 
 
 async def show_station_data_chart(station_id:int) -> None:
+    """generates a chart presenting all data for station id specified in the argument"""
     stand_data = await get_all_stand_data_for_station(station_id)
     for stand in stand_data:
         values = []
@@ -95,6 +103,7 @@ async def show_station_data_chart(station_id:int) -> None:
     plt.show()
 
 async def show_all_station_data_chart_for_param(param:str):
+    """returns data for specific measuring stand type specified in the argument for all stations"""
     specific_stand_id_list = await get_all_measuring_stands_list()
     data = []
     for stand_id in specific_stand_id_list:
@@ -115,8 +124,8 @@ async def show_all_station_data_chart_for_param(param:str):
     plt.ylabel('Wartość wskaźnika')
     plt.show()
 
-# asyncio.run(show_all_station_data_chart_for_param("SO2"))
-asyncio.run(get_stations_names_list())
+# asyncio.run(show_all_station_data_chart_for_param("PM10"))
+# asyncio.run(get_stations_names_list())
 
 
 
@@ -127,9 +136,9 @@ asyncio.run(get_stations_names_list())
 
 # pprint(asyncio.run(get_all_stand_data_for_station(52)))
 
-# data = asyncio.run(get_all_stand_data())
+data = asyncio.run(get_all_stand_data())
+asyncio.run(Database.append_to_db(data))
 # Database.save_to_db(data)
-# print(asyncio.run(get_stations_ids_list()))
 # print(get_specific_stand_data(282))
 # asyncio.run(get_stations_names_list())
 # print(asyncio.run(get_all_measuring_stands_list()))
