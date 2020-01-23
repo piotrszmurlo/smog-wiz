@@ -137,7 +137,7 @@ async def show_all_station_data_chart_for_param(param:str):
 # pprint(asyncio.run(get_all_stand_data_for_station(52)))
 
 data = asyncio.run(get_all_stand_data())
-asyncio.run(Database.append_to_db(data))
+asyncio.run(Database.append_to_db2(data))
 # Database.save_to_db(data)
 # print(get_specific_stand_data(282))
 # asyncio.run(get_stations_names_list())
